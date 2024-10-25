@@ -1,0 +1,197 @@
+using UnityEngine;
+using System.Collections.Generic;
+
+[System.Serializable]
+public class PlayerRoleSettings
+{
+    public string roleName;
+    public float healthMultiplier = 1.0f;
+    public float damageMultiplier = 1.0f;
+    public float speedMultiplier = 1.0f;
+    public Color roleColor = Color.white;
+}
+
+[System.Serializable]
+public class DamageItem
+{
+    public string itemName;
+    public int damageAmount;
+    public bool ignoresArmor;
+    public AudioClip impactSound;
+}
+
+public class AdvancedHealthSystem : MonoBehaviour
+{
+    [Header("Player Identity")]
+    public string playerName = "Player";
+    public int playerLevel = 1;
+
+    [Header("Role Settings")]
+    public List<PlayerRoleSettings> playerRoles;
+    public int selectedRoleIndex = 0;
+    private PlayerRoleSettings currentRole;
+
+    [Header("Health Settings")]
+    public int baseHealth = 100;
+    private int currentHealth;
+
+    [Header("Armor Settings")]
+    public int baseArmor = 0;
+    public bool useArmor = true;
+    public float armorReductionPercentage = 20f;
+
+    [Header("Damage Settings")]
+    public float damageCooldown = 0.5f;
+    private float lastDamageTime;
+
+    [Header("Healing Over Time")]
+    public bool enableRegen = false;
+    public int regenAmount = 1;
+    public float regenInterval = 2.0f;
+
+    [Header("Item Damage")]
+    public List<DamageItem> damageItems;
+
+    [Header("Respawn Settings")]
+    public bool respawnOnDeath = true;
+    public float respawnTime = 5.0f;
+
+    [Header("Death & Visual Settings")]
+    public GameObject deathEffect;
+    public GameObject respawnEffect;
+    public AudioClip deathSound;
+    public AudioClip healSound;
+    
+    [Header("Speed & Movement")]
+    public float baseSpeed = 5.0f;
+    private float currentSpeed;
+
+    [Header("UI Display Settings")]
+    public bool showHealthBar = true;
+    public GameObject healthBarPrefab;
+    private GameObject healthBarInstance;
+
+    private Vector3 spawnPosition;
+    private Coroutine regenCoroutine;
+
+    private void Start()
+    {
+        ConfigureRoleSettings();
+        currentHealth = Mathf.RoundToInt(baseHealth * currentRole.healthMultiplier);
+        currentSpeed = baseSpeed * currentRole.speedMultiplier;
+        spawnPosition = transform.position;
+
+        if (showHealthBar && healthBarPrefab != null)
+        {
+            healthBarInstance = Instantiate(healthBarPrefab, transform.position, Quaternion.identity, transform);
+            UpdateHealthBar();
+        }
+    }
+
+    private void ConfigureRoleSettings()
+    {
+        if (playerRoles.Count > selectedRoleIndex)
+        {
+            currentRole = playerRoles[selectedRoleIndex];
+            GetComponent<Renderer>().material.color = currentRole.roleColor;
+        }
+    }
+
+    public void TakeDamage(int damageAmount, bool ignoresArmor = false)
+    {
+        if (Time.time - lastDamageTime < damageCooldown) return;
+        lastDamageTime = Time.time;
+
+        int effectiveDamage = damageAmount;
+        
+        if (useArmor && !ignoresArmor)
+        {
+            effectiveDamage = Mathf.RoundToInt(damageAmount * (1 - armorReductionPercentage / 100));
+        }
+
+        currentHealth -= Mathf.RoundToInt(effectiveDamage * currentRole.damageMultiplier);
+        UpdateHealthBar();
+
+        if (currentHealth <= 0) Die();
+    }
+
+    public void Heal(int healAmount)
+    {
+        currentHealth = Mathf.Min(currentHealth + healAmount, Mathf.RoundToInt(baseHealth * currentRole.healthMultiplier));
+        UpdateHealthBar();
+        if (healSound) AudioSource.PlayClipAtPoint(healSound, transform.position);
+    }
+
+    private void Die()
+    {
+        if (deathEffect) Instantiate(deathEffect, transform.position, Quaternion.identity);
+        if (deathSound) AudioSource.PlayClipAtPoint(deathSound, transform.position);
+
+        if (respawnOnDeath)
+        {
+            gameObject.SetActive(false);
+            Invoke("Respawn", respawnTime);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void Respawn()
+    {
+        transform.position = spawnPosition;
+        currentHealth = Mathf.RoundToInt(baseHealth * currentRole.healthMultiplier);
+        UpdateHealthBar();
+        if (respawnEffect) Instantiate(respawnEffect, transform.position, Quaternion.identity);
+        gameObject.SetActive(true);
+    }
+
+    private void UpdateHealthBar()
+    {
+        if (healthBarInstance)
+        {
+            float healthPercent = (float)currentHealth / (baseHealth * currentRole.healthMultiplier);
+            healthBarInstance.transform.localScale = new Vector3(healthPercent, 1, 1);
+        }
+    }
+
+    public void ApplyItemDamage(string itemName)
+    {
+        DamageItem item = damageItems.Find(x => x.itemName == itemName);
+        if (item != null)
+        {
+            TakeDamage(item.damageAmount, item.ignoresArmor);
+            if (item.impactSound) AudioSource.PlayClipAtPoint(item.impactSound, transform.position);
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (enableRegen && regenCoroutine == null)
+        {
+            regenCoroutine = StartCoroutine(RegenHealth());
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (regenCoroutine != null)
+        {
+            StopCoroutine(regenCoroutine);
+            regenCoroutine = null;
+        }
+    }
+
+    private IEnumerator RegenHealth()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(regenInterval);
+            if (currentHealth < Mathf.RoundToInt(baseHealth * currentRole.healthMultiplier))
+            {
+                Heal(regenAmount);
+            }
+        }
+    }
+}
