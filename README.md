@@ -1,60 +1,82 @@
-Advanced Health System
-Overview
-The AdvancedHealthSystem script allows you to customize player roles and assign them different health, speed, damage, and visual settings in Unity. Each role can have unique multipliers and color settings, making it easy to create diverse character types, from citizens to combat-ready characters like the mafia.
+Advanced Health System for Unity
+The Advanced Health System script provides a comprehensive health, role, and damage management system for Unity. Customize player roles, health, and damage with easy-to-configure settings. This script is ideal for games requiring diverse roles, such as RPGs or multiplayer experiences.
 
-Key features include:
+Features
+Customizable Player Roles: Define unique health, speed, damage, and appearance for each role.
+Armor & Health Mechanics: Manage health, armor, and healing with ease.
+Damage Items: Create items that deal damage with sound effects and customizable damage properties.
+Respawn System: Players respawn after death with effects and sounds.
+Health Bar Display: Shows a health bar above each player.
+Configurable Healing Over Time: Regenerate health at set intervals.
+Setup Instructions
+Step 1: Adding the Script to Your Project
+Download AdvancedHealthSystem.cs and place it in your project’s Scripts folder.
+In Unity, select your Player GameObject (or the character GameObject you want to add health and role features to).
+Attach the Script by dragging AdvancedHealthSystem.cs onto the Player GameObject.
+Step 2: Configuring Basic Player Settings
+Player Identity: In the Inspector, set playerName and playerLevel to identify each player. These can be used to adjust stats if desired.
+Step 3: Creating and Customizing Player Roles
+In the Role Settings section:
+Add Roles by expanding PlayerRoleSettings.
+For each role, define:
+roleName: Name of the role (e.g., “Citizen”).
+healthMultiplier: Multiplies the player’s base health.
+damageMultiplier: Increases or decreases damage dealt by the player.
+speedMultiplier: Changes player movement speed.
+roleColor: Color that identifies the role in-game (applies to the player’s material).
+Step 4: Setting Health & Armor
+Health Settings:
 
-Customizable player roles with health, speed, and damage multipliers
-Configurable health, armor, and healing mechanics
-Support for item-based damage
-Health regeneration over time
-Respawn on death with effects and sounds
-Health bar display
-How to Use
-Add the Script to Your Player GameObject
+Set the player’s baseHealth.
+This value will be adjusted by each role’s healthMultiplier.
+Armor Settings:
 
-Attach the AdvancedHealthSystem script to the player character GameObject. This setup allows the player to have health, armor, and respawn mechanics.
-Configure Player Roles in Inspector
+Enable Use Armor by checking useArmor.
+Set armorReductionPercentage to control how much armor reduces incoming damage (e.g., 20% reduction).
+Step 5: Customizing Damage Items
+Under Item Damage:
+Add damage items, such as weapons, with unique properties.
+Each item has:
+itemName: The item’s name (e.g., “Knife”).
+damageAmount: How much damage it deals.
+ignoresArmor: If checked, the item will bypass the player’s armor.
+impactSound: An optional sound effect that plays when the item is used.
+Step 6: Enabling Health Regeneration
+Healing Over Time: Check enableRegen to allow health regeneration.
+Set regenAmount (health gained per interval).
+Set regenInterval (time interval in seconds for each regeneration tick).
+Step 7: Configuring Death, Respawn, and Visual Effects
+Death Settings:
 
-In the PlayerRoleSettings section, you can add various roles like "Citizen," "Mafia," or "Doctor."
-Each role has attributes such as:
-roleName: The name of the role, e.g., "Citizen"
-healthMultiplier: Adjusts health for each role
-damageMultiplier: Adjusts how much damage they deal or take
-speedMultiplier: Modifies speed
-roleColor: Changes player color based on role
-Adjust Base Settings in Inspector
+Attach a deathEffect (e.g., a particle effect) that plays upon player death.
+Attach deathSound to play a sound when the player dies.
+Respawn Settings:
 
-Player Identity: Set player name and level, which can influence stats.
-Health Settings: Define base health and initial values.
-Armor Settings: Enable or disable armor, set the armor percentage reduction.
-Damage Settings: Adjust cooldown between damage instances.
-Healing Over Time: Enable health regeneration and set regeneration amount and frequency.
-Define Damage Items
+Check respawnOnDeath to allow players to respawn after death.
+Set respawnTime (in seconds) before the player respawns.
+Add a respawnEffect if desired.
+Step 8: Adding Health Bar UI
+UI Display Settings:
+Check showHealthBar to show a health bar above the player.
+Attach a Health Bar Prefab (e.g., a UI slider or bar) that will follow the player’s health status.
+Usage
+Example: Setting Up Roles
+To add roles like Citizen and Mafia:
 
-In the Damage Item section, create items that inflict damage, e.g., a “Knife” with a specified damage amount and sound effects.
-Respawn and Death Visuals
+Go to Role Settings in the Inspector.
+Add entries for:
+Citizen: Set healthMultiplier to 1.0, damageMultiplier to 1.0, and choose a neutral color.
+Mafia: Set damageMultiplier higher (e.g., 1.5) for stronger attacks and choose a distinct color.
+Example: Taking Damage
+To apply damage using a configured item:
 
-Add death and respawn effects, sounds, and adjust respawn times to enhance gameplay experience when players die and respawn.
-Health Bar Display
-
-Enable UI Display Settings to show a health bar above the player, which scales based on health percentage.
-Features Explained
-Dynamic Roles: Each role can alter player health, speed, and attack power through customizable settings.
-Health and Armor: Protects the player based on armor settings and allows fine-tuning of how armor reduces incoming damage.
-Damage Cooldown: Prevents rapid damage in short intervals, providing balance.
-Healing and Regeneration: Configurable health regeneration adds realism by restoring health gradually over time.
-Damage Items: Integrate various weapons and items with different effects and sounds.
-Respawn Mechanics: Automatic respawn after death with effects and sounds to keep players in action.
-Health Bar UI: Displays real-time health changes to players.
-Example of Configuring Roles
-Add AdvancedHealthSystem to your player GameObject in Unity.
-Expand Player Roles in the Inspector and create roles:
-Citizen: Set healthMultiplier to 1.0, speedMultiplier to 1.0, damageMultiplier to 1.0, and roleColor to white.
-Mafia: Set higher damageMultiplier for stronger attacks, and a different roleColor.
-Doctor: Slightly lower damageMultiplier, unique roleColor, and enable a healing item.
-Additional Notes
-Role Color: Automatically applies when a role is assigned.
-On Damage: Plays specific sounds and updates health visually.
-Regen: Automatically starts when enableRegen is true.
-This script makes it easy to integrate a fully-featured health and role system into any Unity game, making it ideal for RPGs, combat games, and any multiplayer game where role diversity is key. Adjust settings in the Inspector for immediate gameplay effects, and feel free to extend the script for even more custom roles and effects!
+Call ApplyItemDamage("Knife") to use the item’s damage settings.
+The script will check for armor and apply effects based on ignoresArmor.
+Code Structure
+PlayerRoleSettings: Stores unique settings for each role.
+DamageItem: Defines item-specific damage.
+AdvancedHealthSystem: Main script for health, damage, and player role functionality.
+Notes
+Health Bar UI: Ensure you have a prefab ready to display health. It scales based on the player’s remaining health.
+Role Colors: The player’s color updates automatically based on their role.
+This setup provides a comprehensive role-based system for health and damage in Unity, perfect for complex multiplayer or role-playing games. Adjust settings in the Inspector as needed to fine-tune each role and gameplay experience.
